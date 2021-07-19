@@ -23,7 +23,8 @@ import {
   fortmatic,
   magic,
   portis,
-  torus
+  torus,
+  imkey
 } from '../connectors'
 import { Spinner } from '../components/Spinner'
 
@@ -40,7 +41,8 @@ enum ConnectorNames {
   Fortmatic = 'Fortmatic',
   Magic = 'Magic',
   Portis = 'Portis',
-  Torus = 'Torus'
+  Torus = 'Torus',
+  ImKey = 'imKey'
 }
 
 const connectorsByName: { [connectorName in ConnectorNames]: any } = {
@@ -56,7 +58,8 @@ const connectorsByName: { [connectorName in ConnectorNames]: any } = {
   [ConnectorNames.Fortmatic]: fortmatic,
   [ConnectorNames.Magic]: magic,
   [ConnectorNames.Portis]: portis,
-  [ConnectorNames.Torus]: torus
+  [ConnectorNames.Torus]: torus,
+  [ConnectorNames.ImKey]: imkey
 }
 
 function getErrorMessage(error: Error) {
@@ -461,6 +464,36 @@ function App() {
               }}
             >
               Kill Portis Session
+            </button>
+          </>
+        )}
+        {connector === connectorsByName[ConnectorNames.Portis] && (
+          <>
+            {chainId !== undefined && (
+              <button
+                style={{
+                  height: '3rem',
+                  borderRadius: '1rem',
+                  cursor: 'pointer'
+                }}
+                onClick={() => {
+                  ;(connector as any).changeNetwork(chainId === 1 ? 100 : 1)
+                }}
+              >
+                Switch Networks
+              </button>
+            )}
+            <button
+              style={{
+                height: '3rem',
+                borderRadius: '1rem',
+                cursor: 'pointer'
+              }}
+              onClick={() => {
+                ;(connector as any).close()
+              }}
+            >
+              Kill imKey Session
             </button>
           </>
         )}
