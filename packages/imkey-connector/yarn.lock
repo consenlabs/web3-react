@@ -340,10 +340,10 @@
     "@ethersproject/properties" "^5.1.0"
     "@ethersproject/strings" "^5.1.0"
 
-"@imkey/web3-provider@^1.1.0-alpha.2":
-  version "1.1.0-alpha.2"
-  resolved "https://registry.yarnpkg.com/@imkey/web3-provider/-/web3-provider-1.1.0-alpha.2.tgz#2ea1a17b7c735add13ea984941ab7960e1bad26e"
-  integrity sha512-xEv/Vlj08WXicNBVzOqnKUfTww5YXAuMKGeCcp59VBrGzIpdKf2f+rvxR+xgvtRr1Y+vPxAj/G4yivCLHtIPJw==
+"@imkey/web3-provider@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.npmjs.org/@imkey/web3-provider/-/web3-provider-1.1.1.tgz#d97a4b784ce05748fe6ffdd3257704ecb78c01a2"
+  integrity sha512-rjZzqN1mtXaYAjmbXJHV//pr1KzuOUI6MJuwGQWvit+dON/RtYwjImTgUq7zbJIeNLKf9mJHzrZQEP1UeCRogQ==
   dependencies:
     "@types/event-emitter-es6" "^1.1.0"
     "@types/sha.js" "^2.4.0"
