@@ -28,7 +28,6 @@ export class ImKeyConnector extends AbstractConnector {
   }
   public async activate(): Promise<ConnectorUpdate> {
     if (!this.provider) {
-      // const imKeyProvider = await import('../../../../imkey-web3-provider').then(m => m?.default ?? m)
       this.provider = new imKeyProvider({
         rpcUrl: this.url,
         chainId: this.chainId,
@@ -38,7 +37,6 @@ export class ImKeyConnector extends AbstractConnector {
     }
 
     const provider = await this.provider
-
     const account = await provider.enable().then((accounts: string[]): string => accounts[0])
 
     return { provider, account }
@@ -52,11 +50,17 @@ export class ImKeyConnector extends AbstractConnector {
     return this.chainId
   }
 
-  public async getAccount(): Promise<null> {
+  public async getAccount(): Promise<null | string> {
     return this.provider._providers[0].getAccountsAsync(1).then((accounts: string[]): string => accounts[0])
   }
 
-  public deactivate() {
-    this.provider.stop()
+  public async deactivate() {
+    
+  }
+
+  public async close() {
+    await this.provider.stop()
+    this.provider = null;
+    this.emitDeactivate()
   }
 }
