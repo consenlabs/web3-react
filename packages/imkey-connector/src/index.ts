@@ -8,7 +8,10 @@ interface ImKeyConnectorArguments {
   chainId: number
   url: string
   headers?: Record<string, string>
-  symbol?: string
+  symbol?: string,
+  decimals?: number
+  msgAlert?: (msg: string) => void
+  language?: string
 }
 
 export class ImKeyConnector extends AbstractConnector {
@@ -16,15 +19,20 @@ export class ImKeyConnector extends AbstractConnector {
   private readonly url: string
   private readonly headers: Record<string, string> | undefined
   private readonly symbol: string | undefined
+  private decimals: number | undefined
+  private language: string | undefined
   private provider: any
 
-  constructor({ chainId, url, headers, symbol }: ImKeyConnectorArguments) {
+  constructor({ chainId, url, headers, symbol, decimals, language }: ImKeyConnectorArguments) {
     super({ supportedChainIds: [chainId] })
 
     this.chainId = chainId
     this.url = url
     this.headers = headers
     this.symbol = symbol
+    this.decimals = decimals
+    this.language = language
+
   }
   public async activate(): Promise<ConnectorUpdate> {
     if (!this.provider) {
@@ -32,12 +40,15 @@ export class ImKeyConnector extends AbstractConnector {
         rpcUrl: this.url,
         chainId: this.chainId,
         headers: this.headers,
-        symbol: this.symbol
+        symbol: this.symbol,
+        decimals: this.decimals,
+        language: this.language
       })
     }
 
     const provider = await this.provider
     const account = await provider.enable().then((accounts: string[]): string => accounts[0])
+    provider.on('disconnect', this.close.bind(this))
 
     return { provider, account }
   }
@@ -59,7 +70,12 @@ export class ImKeyConnector extends AbstractConnector {
   }
 
   public async close() {
-    await this.provider.stop()
+    try {
+      await this.provider.stop()
+    } catch {
+      // ignore
+    }
+    
     this.provider = null;
     this.emitDeactivate()
   }
