@@ -8,9 +8,12 @@ interface ImKeyConnectorArguments {
   chainId?: number
   url: string
   headers?: Record<string, string>
-  symbol?: string
   rpc?: Record<number, string>
   supportedChainIds?: number[]
+  symbol?: string,
+  decimals?: number
+  msgAlert?: (msg: string) => void
+  language?: string
 }
 
 export class ImKeyConnector extends AbstractConnector {
@@ -19,6 +22,8 @@ export class ImKeyConnector extends AbstractConnector {
   private readonly rpc: Record<number, string> = {}
   private readonly headers: Record<string, string> | undefined
   private readonly symbol: string | undefined
+  private decimals: number | undefined
+  private language: string | undefined
   private provider: any
 
   constructor({
@@ -28,6 +33,8 @@ export class ImKeyConnector extends AbstractConnector {
     symbol,
     rpc,
     supportedChainIds,
+    decimals,
+    language,
   }: ImKeyConnectorArguments) {
     super({ supportedChainIds: supportedChainIds || [chainId || 0] })
 
@@ -36,6 +43,9 @@ export class ImKeyConnector extends AbstractConnector {
     this.url = url || this.rpc[this.chainId]
     this.headers = headers
     this.symbol = symbol
+    this.decimals = decimals
+    this.language = language
+
   }
 
   private handleChainChanged = (chainId: number): void => {
@@ -59,7 +69,9 @@ export class ImKeyConnector extends AbstractConnector {
         rpcUrl: this.url,
         chainId: this.chainId,
         headers: this.headers,
-        symbol: this.symbol
+        symbol: this.symbol,
+        decimals: this.decimals,
+        language: this.language
       })
     }
 
@@ -68,6 +80,7 @@ export class ImKeyConnector extends AbstractConnector {
     this.provider.on('chainChanged', this.handleChainChanged)
 
     const account = await provider.enable().then((accounts: string[]): string => accounts[0])
+    provider.on('disconnect', this.close.bind(this))
 
     return { provider, account }
   }
@@ -89,7 +102,12 @@ export class ImKeyConnector extends AbstractConnector {
   }
 
   public async close() {
-    await this.provider.stop()
+    try {
+      await this.provider.stop()
+    } catch {
+      // ignore
+    }
+    
     this.provider = null;
     this.emitDeactivate()
   }
