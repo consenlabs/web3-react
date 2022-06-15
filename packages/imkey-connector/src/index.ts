@@ -5,35 +5,64 @@ import { AbstractConnector } from '@web3-react/abstract-connector'
 import imKeyProvider from '@imkey/web3-provider'
 
 interface ImKeyConnectorArguments {
-  chainId: number
+  chainId?: number
   url: string
   headers?: Record<string, string>
-  symbol?: string,
   decimals?: number
   msgAlert?: (msg: string) => void
   language?: string
+  symbol?: string
+  rpc?: Record<number, string>
+  supportedChainIds?: number[]
 }
 
 export class ImKeyConnector extends AbstractConnector {
-  private readonly chainId: number
-  private readonly url: string
+  private url: string
+  private _chainId = 0
+  private readonly rpc: Record<number, string> = {}
   private readonly headers: Record<string, string> | undefined
   private readonly symbol: string | undefined
   private decimals: number | undefined
   private language: string | undefined
   private provider: any
 
-  constructor({ chainId, url, headers, symbol, decimals, language }: ImKeyConnectorArguments) {
-    super({ supportedChainIds: [chainId] })
+  constructor({
+    chainId,
+    url,
+    headers,
+    symbol,
+    rpc,
+    supportedChainIds,
+    decimals,
+    language
+  }: ImKeyConnectorArguments) {
+    super({ supportedChainIds: supportedChainIds || [chainId || 0] })
 
-    this.chainId = chainId
-    this.url = url
+    this.rpc = rpc || {}
+    this._chainId = chainId || 1
+    this.url = url || this.rpc[this.chainId]
     this.headers = headers
     this.symbol = symbol
     this.decimals = decimals
     this.language = language
 
   }
+
+  private handleChainChanged = (chainId: number): void => {
+    this.emitUpdate({ chainId })
+  }
+
+  set chainId(chainId: number) {
+    this._chainId = chainId
+    if (this.rpc && chainId in this.rpc) {
+      this.url = this.rpc[chainId]
+    }
+  }
+
+  get chainId() {
+    return this._chainId
+  }
+  
   public async activate(): Promise<ConnectorUpdate> {
     if (!this.provider) {
       this.provider = new imKeyProvider({
@@ -47,6 +76,9 @@ export class ImKeyConnector extends AbstractConnector {
     }
 
     const provider = await this.provider
+    
+    this.provider.on('chainChanged', this.handleChainChanged)
+
     const account = await provider.enable().then((accounts: string[]): string => accounts[0])
     provider.on('disconnect', this.close.bind(this))
 
