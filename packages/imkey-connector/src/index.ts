@@ -1,9 +1,6 @@
 import { ConnectorUpdate } from '@web3-react/types'
 import { AbstractConnector } from '@web3-react/abstract-connector'
 
-// @ts-ignore
-import imKeyProvider from '@imkey/web3-provider'
-
 interface ImKeyConnectorArguments {
   chainId?: number
   url: string
@@ -65,6 +62,7 @@ export class ImKeyConnector extends AbstractConnector {
   
   public async activate(): Promise<ConnectorUpdate> {
     if (!this.provider) {
+      const imKeyProvider = await import('@imkey/web3-provider').then(m => m?.default ?? m)
       this.provider = new imKeyProvider({
         rpcUrl: this.url,
         chainId: this.chainId,
